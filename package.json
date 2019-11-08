@@ -1,0 +1,31 @@
+{
+  "name": "tomato-clock",
+  "version": "1.0.0 beta",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "build": {
+    "appId": "bruceStudio.public.tomatoClock.v1",
+    "win": {
+      "target": "portable",
+      "icon": "assets/app-icon.png",
+      "extraResources": [
+        {
+          "from": "assets/",
+          "to": "assets/"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^7.0.0",
+    "electron-builder": "^22.1.0"
+  }
+}

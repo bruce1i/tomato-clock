@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tomato Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            overflow: hidden;
+            color: white;
+            font-family: Microsoft YaHei;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+            background-color: #222222;
+            padding-top: 60px;
+        }
+
+        #rest,
+        #tip {
+            text-align: center;
+            font-size: 80px;
+        }
+
+        #start {
+            color: white;
+            /*background-color: #1877f2;*/
+            border: none;
+            border-radius: 6px;
+            font-size: 55px;
+            width: 332px;
+            height: 100px;
+            line-height: 100px;
+            padding: 0 16px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            /*cursor: pointer;*/
+            outline: none;
+            font-family: Microsoft YaHei;
+            background-color: transparent;
+            cursor: default;
+        }
+
+        /*button.start.disable {*/
+        /*    background-color: transparent;*/
+        /*    cursor: default;*/
+        /*}*/
+
+        #dismiss {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: 90px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 16px;
+            color: white;
+            background-color: transparent;
+            border: solid 1px white;
+        }
+
+
+        #app.done {
+            background-color: rgba(0, 132, 255, 0.1);
+        }
+
+        #app.done #rest {
+            visibility: hidden;
+        }
+
+        #app.done #tip {
+            color: #1877f2;
+        }
+
+        #app.done #start {
+            background-color: #1877f2;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1 id="rest">HAVE A REST.</h1>
+    <h1 id="tip">休息一下</h1>
+    <button id="start"></button>
+    <button id="dismiss">Dismiss</button>
+</div>
+<script src="index.js"></script>
+</body>
+</html>
