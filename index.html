@@ -34,7 +34,6 @@
 
         #start {
             color: white;
-            /*background-color: #1877f2;*/
             border: none;
             border-radius: 6px;
             font-size: 55px;
@@ -48,33 +47,36 @@
             bottom: 0;
             left: 0;
             margin: auto;
-            /*cursor: pointer;*/
             outline: none;
             font-family: Microsoft YaHei;
             background-color: transparent;
             cursor: default;
         }
 
-        /*button.start.disable {*/
-        /*    background-color: transparent;*/
-        /*    cursor: default;*/
-        /*}*/
-
-        #dismiss {
+        .continue {
             position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            margin: 0 auto;
-            width: 90px;
-            height: 40px;
-            line-height: 40px;
-            font-size: 16px;
-            color: white;
-            background-color: transparent;
-            border: solid 1px white;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 18px;
         }
 
+        a {
+            color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 0 10px;
+        }
+
+        a:hover {
+            color: white;
+        }
+
+        .dismiss {
+            color: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
 
         #app.done {
             background-color: rgba(0, 132, 255, 0.1);
@@ -92,6 +94,10 @@
             background-color: #1877f2;
             cursor: pointer;
         }
+
+        #app.done .continue {
+            visibility: hidden;
+        }
     </style>
 </head>
 <body>
@@ -99,7 +105,7 @@
     <h1 id="rest">HAVE A REST.</h1>
     <h1 id="tip">休息一下</h1>
     <button id="start"></button>
-    <button id="dismiss">Dismiss</button>
+    <div class="continue"><a id="add5">+5'</a>/<a id="dismiss" class="dismiss">Dismiss</a></div>
 </div>
 <script src="index.js"></script>
 </body>

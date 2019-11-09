@@ -8,7 +8,7 @@ const {
     screen
 } = require('electron')
 const {
-    MAX_WORKING_TIME,
+    MAX_TOMATO_TIME,
     WORKDAYS,
     WORKING_TIME_RANGE,
     BREAKFAST_TIME_RAGE,
@@ -27,25 +27,81 @@ let indexWin
 let timeWin // 给第二屏用的
 let tray
 let timerId
-let duration = 0 // 分钟，-1表示暂停
+let duration = 0 // 分钟
+let isAllDayRunning = false
+
+const contextMenuTempl = [
+    {
+        label: 'v1.0.0 beta'
+    },
+    {
+        icon: path.join(__dirname, '/assets/stopwatch.png'),
+        label: '-'
+    },
+    {
+        type: 'separator'
+    },
+    {
+        label: 'All day',
+        type: 'checkbox',
+        checked: false,
+        click: (item) => {
+            if (item.checked) {
+                isAllDayRunning = true
+                contextMenuTempl[3].checked = true
+                contextMenuTempl[4].checked = false
+            }
+            updateTray()
+        }
+    },
+    {
+        label: 'Working time',
+        type: 'checkbox',
+        checked: true,
+        click: (item) => {
+            if (item.checked) {
+                isAllDayRunning = false
+                contextMenuTempl[3].checked = false
+                contextMenuTempl[4].checked = true
+            }
+            updateTray()
+        }
+    },
+    {
+        type: 'separator'
+    },
+    {
+        icon: path.join(__dirname, '/assets/coffee-cup.png'),
+        label: 'Break',
+        click: () => {
+            haveBreak()
+        }
+    },
+    {
+        label: 'Quit',
+        click: () => {
+            quitApp()
+        }
+    }
+]
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, '/assets/tray-icon.png'))
-
-    const contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'v1.0.0 beta'
-        },
-        {
-            label: 'Quit',
-            click: () => {
-                quitApp()
-            }
-        }
-    ])
-
+    tray = new Tray(path.join(__dirname, '/assets/tray-icon-dev.png'))
     tray.setToolTip('Tomato Clock')
-    tray.setContextMenu(contextMenu)
+    tray.setContextMenu(Menu.buildFromTemplate(contextMenuTempl))
+}
+
+function updateTray() {
+    const nonWorkingTimeLabel = 'Non-working time'
+    const currLabel = contextMenuTempl[1].label
+    const isTomatoTime = checkTomatoTime()
+
+    if (!isTomatoTime && currLabel === nonWorkingTimeLabel) {
+        return
+    }
+
+    contextMenuTempl[1].label = isTomatoTime ? `${String(duration)}'` : nonWorkingTimeLabel
+    tray.setContextMenu(Menu.buildFromTemplate(contextMenuTempl))
 }
 
 function createIndexWin() {
@@ -127,43 +183,61 @@ function closeTomatoWin() {
     destroyTimeWin()
 }
 
-function startWorkingTimer() {
+function checkTomatoTime() {
+    if (isAllDayRunning) {
+        return true
+    }
+
+    const currDate = new Date()
+    const currDay = currDate.getDay() === 0 ? 7 : currDate.getDay()
+    const currHours = currDate.getHours()
+    const isWorkday = WORKDAYS.includes(currDay)
+    const isWorkingTime = currHours >= startWorkingTime && currHours < endWorkingTime
+    const isBreakfastTime = currHours >= startBreakfastTime && currHours < endBreakfastTime
+    const isLunchTime = currHours >= startLunchTime && currHours < endLunchTime
+    const isDinnerTime = currHours >= startDinnerTime && currHours < endDinnerTime
+
+    if (isWorkday
+        && isWorkingTime
+        && !isBreakfastTime && !isLunchTime && !isDinnerTime) {
+        return true
+    }
+
+    return false
+}
+
+function startTomatoTimer(time = 0) {
+    duration = time == null || time <= 0 || time >= MAX_TOMATO_TIME ? 0 : MAX_TOMATO_TIME - time
+    clearInterval(timerId)
+    updateTray()
+    closeTomatoWin()
+
     timerId = setInterval(() => {
-        const currDate = new Date()
-        const currDay = currDate.getDay() === 0 ? 7 : currDate.getDay()
-        const currHours = currDate.getHours()
-        const isWorkday = WORKDAYS.includes(currDay)
-        const isWorkingTime = currHours >= startWorkingTime && currHours < endWorkingTime
-        const isBreakfastTime = currHours >= startBreakfastTime && currHours < endBreakfastTime
-        const isLunchTime = currHours >= startLunchTime && currHours < endLunchTime
-        const isDinnerTime = currHours >= startDinnerTime && currHours < endDinnerTime
-        const isBreak = duration === -1
+        if (checkTomatoTime()) {
+            duration++
 
-        if (isWorkday
-            && isWorkingTime
-            && !isBreakfastTime && !isLunchTime && !isDinnerTime) {
-
-            if (!isBreak) {
-                duration += 1
-
-                if (duration >= MAX_WORKING_TIME) {
-                    duration = -1
-                    showTomatoWin()
-                }
+            if (duration >= MAX_TOMATO_TIME) {
+                haveBreak()
             }
         } else {
             duration = 0
         }
+
+        updateTray()
     }, LOOP_TIME)
+}
+
+function haveBreak() {
+    clearInterval(timerId)
+    showTomatoWin()
 }
 
 function handleMainProcess() {
     createTray()
-    startWorkingTimer()
+    startTomatoTimer()
 
-    ipcMain.on('close-index-win', () => {
-        duration = 0
-        closeTomatoWin()
+    ipcMain.on('start-tomato-timer', (e, time) => {
+        startTomatoTimer(time)
     })
 }
 

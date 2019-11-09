@@ -5,14 +5,18 @@ const ONE_SECOND = 1000
 const $app = document.getElementById('app')
 const $tip = document.getElementById('tip')
 const $startBtn = document.getElementById('start')
-const $dismissBtn = document.getElementById('dismiss')
+const $dismiss = document.getElementById('dismiss')
+const $add5 = document.getElementById('add5')
 let timerId
 let countDownTime = BREAK_TIME
 
 function startCountDown() {
-    if (countDownTime === 0) {
+    if (countDownTime <= 0) {
         $app.classList.add('done')
         $tip.innerHTML = '可以继续了'
+        $startBtn.innerHTML = 'Go on😀'
+        clearTimeout(timerId)
+        return;
     }
 
     $startBtn.innerHTML = convert2TimeString(countDownTime--)
@@ -20,23 +24,26 @@ function startCountDown() {
 }
 
 function convert2TimeString(time) {
-    const t = Math.abs(time)
-    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`
+    return `${String(Math.floor(time / 60)).padStart(2, '0')} ${String(time % 60).padStart(2, '0')}`
 }
 
-function closeWin() {
+function startTomatoTimer(time = 0) {
     clearTimeout(timerId)
-    ipcRenderer.send('close-index-win')
+    ipcRenderer.send('start-tomato-timer', time)
 }
 
 $startBtn.onclick = () => {
     if ($app.classList.contains('done')) {
-        closeWin()
+        startTomatoTimer()
     }
 }
 
-$dismissBtn.onclick = () => {
-    closeWin()
+$dismiss.onclick = () => {
+    startTomatoTimer()
+}
+
+$add5.onclick = () => {
+    startTomatoTimer(5)
 }
 
 startCountDown()
