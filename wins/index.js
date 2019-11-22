@@ -1,5 +1,5 @@
 const {ipcRenderer} = require('electron')
-const {BREAK_TIME} = require('./config')
+const {BREAK_TIME} = require('../config')
 
 const ONE_SECOND = 1000
 const $app = document.getElementById('app')

@@ -1,11 +1,10 @@
-const path = require('path')
+// const path = require('path')
 const {
     app,
     BrowserWindow,
-    Tray,
-    Menu,
     ipcMain,
-    screen
+    screen,
+    dialog
 } = require('electron')
 const {
     MAX_TOMATO_TIME,
@@ -15,6 +14,8 @@ const {
     LUNCH_TIME_RANGE,
     DINNER_TIME_RANGE
 } = require('./config')
+const startup = require('./startup')
+const tray = require('./tray')
 
 const ONE_SECOND = 1000
 const LOOP_TIME = 60 * ONE_SECOND
@@ -25,83 +26,52 @@ const [startDinnerTime, endDinnerTime] = DINNER_TIME_RANGE
 
 let indexWin
 let timeWin // 给第二屏用的
-let tray
 let timerId
 let duration = 0 // 分钟
 let isAllDayRunning = false
 
-const contextMenuTempl = [
-    {
-        label: 'v1.0.0 beta'
-    },
-    {
-        icon: path.join(__dirname, '/assets/stopwatch.png'),
-        label: '-'
-    },
-    {
-        type: 'separator'
-    },
-    {
-        label: 'All day',
-        type: 'checkbox',
-        checked: false,
-        click: (item) => {
-            if (item.checked) {
-                isAllDayRunning = true
-                contextMenuTempl[3].checked = true
-                contextMenuTempl[4].checked = false
-            }
-            updateTray()
-        }
-    },
-    {
-        label: 'Working time',
-        type: 'checkbox',
-        checked: true,
-        click: (item) => {
-            if (item.checked) {
-                isAllDayRunning = false
-                contextMenuTempl[3].checked = false
-                contextMenuTempl[4].checked = true
-            }
-            updateTray()
-        }
-    },
-    {
-        type: 'separator'
-    },
-    {
-        icon: path.join(__dirname, '/assets/coffee-cup.png'),
-        label: 'Break',
-        click: () => {
-            haveBreak()
-        }
-    },
-    {
-        label: 'Quit',
-        click: () => {
-            quitApp()
-        }
-    }
-]
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, '/assets/tray-icon-dev.png'))
-    tray.setToolTip('Tomato Clock')
-    tray.setContextMenu(Menu.buildFromTemplate(contextMenuTempl))
+    tray.item('allDay').click = (item) => {
+        if (item.checked) {
+            isAllDayRunning = true
+            tray.item('allDay').checked = true
+            tray.item('workingTime').checked = false
+        }
+        tray.refresh()
+    }
+    tray.item('workingTime').click = (item) => {
+        if (item.checked) {
+            isAllDayRunning = false
+            tray.item('allDay').checked = false
+            tray.item('workingTime').checked = true
+        }
+        tray.refresh()
+    }
+    tray.item('startup').checked = startup.checkStartup()
+    tray.item('startup').click = (item) => {
+        startup.setStartup(item.checked)
+    }
+    tray.item('break').click = () => {
+        haveBreak()
+    }
+    tray.item('quit').click = () => {
+        quitApp()
+    }
+    tray.create()
 }
 
-function updateTray() {
+function updateTrayTime() {
     const nonWorkingTimeLabel = 'Non-working time'
-    const currLabel = contextMenuTempl[1].label
+    const currLabel = tray.item('time').label
     const isTomatoTime = checkTomatoTime()
 
     if (!isTomatoTime && currLabel === nonWorkingTimeLabel) {
         return
     }
 
-    contextMenuTempl[1].label = isTomatoTime ? `${String(duration)}'` : nonWorkingTimeLabel
-    tray.setContextMenu(Menu.buildFromTemplate(contextMenuTempl))
+    tray.item('time').label = isTomatoTime ? `${String(duration)}'` : nonWorkingTimeLabel
+    tray.refresh()
 }
 
 function createIndexWin() {
@@ -124,7 +94,7 @@ function createIndexWin() {
     })
 
     indexWin.maximize()
-    indexWin.loadFile('index.html')
+    indexWin.loadFile('./wins/index.html')
     // indexWin.webContents.openDevTools() // 关闭开发者工具窗口才可以窗体透明
 }
 
@@ -154,7 +124,7 @@ function createTimeWin() {
             }, 0)
         })
 
-        timeWin.loadFile('time.html')
+        timeWin.loadFile('./wins/time.html')
         // timeWin.webContents.openDevTools()
     }
 }
@@ -209,7 +179,7 @@ function checkTomatoTime() {
 function startTomatoTimer(time = 0) {
     duration = time == null || time <= 0 || time >= MAX_TOMATO_TIME ? 0 : MAX_TOMATO_TIME - time
     clearInterval(timerId)
-    updateTray()
+    updateTrayTime()
     closeTomatoWin()
 
     timerId = setInterval(() => {
@@ -223,7 +193,7 @@ function startTomatoTimer(time = 0) {
             duration = 0
         }
 
-        updateTray()
+        updateTrayTime()
     }, LOOP_TIME)
 }
 
@@ -232,7 +202,12 @@ function haveBreak() {
     showTomatoWin()
 }
 
+function safetyCheck() {
+    startup.repairStartup()
+}
+
 function handleMainProcess() {
+    safetyCheck()
     createTray()
     startTomatoTimer()
 
@@ -252,3 +227,20 @@ app.on('ready', handleMainProcess)
 app.on('window-all-closed', () => {
     // 如果你没有监听此事件并且所有窗口都关闭了，默认的行为是控制退出程序
 })
+
+function alert(msg) {
+    dialog.showMessageBox({
+        message: msg + ''
+    })
+}
+
+// app.getPath("appData")
+// app.getPath('userData')
+// app.getAppPath()
+// __dirname
+// require.main.filename
+// app-root-path
+// process.execPath
+// process.env.INIT_CWD
+// process.env.PORTABLE_EXECUTABLE_FILE
+// process.env.PORTABLE_EXECUTABLE_DIR
