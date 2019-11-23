@@ -30,7 +30,6 @@ let timerId
 let duration = 0 // 分钟
 let isAllDayRunning = false
 
-
 function createTray() {
     tray.item('allDay').click = (item) => {
         if (item.checked) {
@@ -94,7 +93,7 @@ function createIndexWin() {
     })
 
     indexWin.maximize()
-    indexWin.loadFile('./wins/index.html')
+    indexWin.loadFile('src/windows/index.html')
     // indexWin.webContents.openDevTools() // 关闭开发者工具窗口才可以窗体透明
 }
 
@@ -124,7 +123,7 @@ function createTimeWin() {
             }, 0)
         })
 
-        timeWin.loadFile('./wins/time.html')
+        timeWin.loadFile('src/windows/time.html')
         // timeWin.webContents.openDevTools()
     }
 }

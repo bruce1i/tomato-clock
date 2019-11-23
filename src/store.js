@@ -38,7 +38,6 @@ class Store {
     }
 
     save() {
-        console.log('> this',this)
         writeFile(this.path, this.data)
     }
 }

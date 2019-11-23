@@ -2,7 +2,7 @@
   "name": "tomato-clock",
   "version": "1.0.0b",
   "description": "Tomato Clock",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,10 +15,10 @@
     "appId": "bruceStudio.public.tomatoClock.v1",
     "win": {
       "target": "portable",
-      "icon": "assets/app-icon.png",
+      "icon": "src/assets/app-icon.png",
       "extraResources": [
         {
-          "from": "assets/",
+          "from": "src/assets/",
           "to": "assets/"
         }
       ]
