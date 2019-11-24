@@ -49,6 +49,7 @@ function createTray() {
     }
     tray.item('startup').checked = startup.checkStartup()
     tray.item('startup').click = (item) => {
+        tray.item('startup').checked = item.checked
         startup.setStartup(item.checked)
     }
     tray.item('break').click = () => {
